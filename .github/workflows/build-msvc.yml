@@ -23,6 +23,7 @@ jobs:
       - name: set PATH cmake generate, build and install
         shell: cmd
         run: |
+            cd VTK &&^
             cmake.exe -G"Visual Studio 16 2019" ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DVTK_BUILD_TESTING=OFF ^

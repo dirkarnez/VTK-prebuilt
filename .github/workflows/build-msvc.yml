@@ -1,0 +1,52 @@
+name: cpp-cmake-mingw-prebuilt-release-actions-workflow
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*'
+      
+jobs:
+  build:
+    name: Create Release
+    runs-on: windows-2019
+    env:
+      libraryName: VTK
+      installationPath: VTK-installation
+      tagName: v9.2.2
+      msvcTargetZip: VTK-${{ github.ref_name }}-msvc2019.zip
+    steps:
+      - name: git clone
+        shell: cmd
+        run: git clone --recursive https://github.com/Kitware/VTK.git && cd VTK && git checkout ${{ env.tagName }}
+
+      - name: set PATH cmake generate, build and install
+        shell: cmd
+        run: |
+            cmake.exe -G"Visual Studio 16 2019" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DVTK_BUILD_TESTING=OFF ^
+            -DVTK_ENABLE_WRAPPING=OFF ^
+            -DVTK_WRAP_PYTHON=OFF ^
+            -DVTK_WRAP_JAVA=OFF ^
+            -DVTK_BUILD_EXAMPLES=OFF ^
+            -DVTK_BUILD_TESTING=OFF ^
+            -DVTK_ENABLE_REMOTE_MODULES=OFF ^
+            -B./build &&^
+            cd build &&^
+            cmake --build . --config Release --target ALL_BUILD -v -- /maxcpucount &&^
+            cmake --install . 
+            
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "VTK/${{ env.installationPath }}"
+          filename: "${{ env.msvcTargetZip }}"
+       
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "VTK/${{ env.installationPath }}/${{ env.msvcTargetZip }}"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}

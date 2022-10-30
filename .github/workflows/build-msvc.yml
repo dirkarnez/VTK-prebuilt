@@ -33,6 +33,7 @@ jobs:
             -DVTK_BUILD_EXAMPLES=OFF ^
             -DVTK_BUILD_TESTING=OFF ^
             -DVTK_ENABLE_REMOTE_MODULES=OFF ^
+            -DCMAKE_INSTALL_PREFIX="build/${{ env.installationPath }}" ^
             -B./build &&^
             cd build &&^
             cmake --build . --config Release --target ALL_BUILD -v -- /maxcpucount &&^
@@ -42,12 +43,12 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
-          directory: "VTK/${{ env.installationPath }}"
+          directory: "VTK/build/${{ env.installationPath }}"
           filename: "${{ env.msvcTargetZip }}"
        
       - name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "VTK/${{ env.installationPath }}/${{ env.msvcTargetZip }}"
+          artifacts: "VTK/build/${{ env.installationPath }}/${{ env.msvcTargetZip }}"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
